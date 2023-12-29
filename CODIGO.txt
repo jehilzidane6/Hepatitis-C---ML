@@ -1,0 +1,186 @@
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+import warnings
+warnings.simplefilter("ignore")
+
+df = pd.read_csv("../input/hepatitis-c-dataset/HepatitisCdata.csv")
+df.head()
+
+df.drop("Unnamed: 0", axis=1, inplace=True)
+
+df.dtypes
+
+df.Category.unique()
+
+# Mapping numeric values
+
+df['Category'] = df['Category'].map({'0=Blood Donor': 0, '0s=suspect Blood Donor': 0, 
+                                     "1=Hepatitis" : 1, "2=Fibrosis" : 1, "3=Cirrhosis" : 1})
+
+df['Sex'] = df['Sex'].map({'m': 1, 'f': 2})
+
+df.head()
+
+# Checking the data types again after the transformation
+df.dtypes
+
+# Checking for missing values in the dataset
+df.isna().sum()
+
+# Filling missing values with the median
+df.fillna(df.median(), inplace=True)
+
+df.isna().sum()
+
+import matplotlib.pyplot as plt
+
+# Supongamos que tienes un DataFrame df con una columna "Category"
+
+fig, ax = plt.subplots(figsize=(8, 8))
+
+# Cambia los colores según tus preferencias
+nuevo_colores = ["#9ABEDB", "#F18C8D"]
+
+plt.pie(x=df["Category"].value_counts(),
+        colors=nuevo_colores,
+        labels=["Suspected Hepatitis C patients", "Healthy Patients"],
+        shadow=True,
+        explode=(0, 0.1)
+        )
+
+plt.show()
+
+import matplotlib.pyplot as plt
+
+# Crea una figura y ejes
+fig, ax = plt.subplots(figsize=(8, 8))
+ax.set_facecolor('white')  # Establece el color de fondo a blanco
+
+# Obtén los valores de conteo para cada categoría
+counts = df["Sex"].value_counts()
+
+# Barra de colores
+nuevo_colores = ["#9ABEDB", "#F18C8D"]
+
+# Crea el gráfico de barras
+bars = plt.bar(x=counts.index, height=counts.values, color=nuevo_colores)
+
+# Etiquetas y título
+plt.xlabel("Gender")
+plt.ylabel("Count")
+plt.title("Distribution of Gender")
+
+# Añade etiquetas a las barras con porcentajes
+total = sum(counts)
+for bar, label in zip(bars, counts.values):
+    percentage = label / total * 100
+    plt.text(bar.get_x() + bar.get_width() / 2 - 0.15, bar.get_height() + 0.1, f"{percentage:.1f}%", ha='center', va='bottom')
+
+# Muestra el gráfico de barras
+plt.show()
+
+# X data
+X = df.drop("Category", axis=1)
+X.head()
+
+# y data
+y = df["Category"]
+y.head()
+
+from sklearn.model_selection import train_test_split
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+len(X_train), len(X_test)
+
+# Scaling the data 
+
+from sklearn.preprocessing import StandardScaler
+scaler = StandardScaler()
+X_train = scaler.fit_transform(X_train)
+X_test = scaler.transform(X_test)
+
+from sklearn.linear_model import LogisticRegression
+lr = LogisticRegression()
+lr.fit(X_train, y_train)
+
+LogisticRegressionScore = lr.score(X_test, y_test)
+print("Accuracy obtained by Logistic Regression model:",LogisticRegressionScore*100)
+
+# Having a look at the confusion matrix for Logistic Regression
+
+from sklearn.metrics import confusion_matrix, classification_report
+sns.set_style("white")
+y_pred_lr = lr.predict(X_test)
+cf_matrix = confusion_matrix(y_test, y_pred_lr)
+sns.heatmap(cf_matrix, annot=True, cmap="Blues_r")
+plt.title("Confusion Matrix for Logistic Regression", fontsize=14, fontname="Helvetica", y=1.03);
+
+# Having a look at the classification report of Logistic Regression
+
+from sklearn import metrics
+print(metrics.classification_report(y_test, y_pred_lr))
+
+from sklearn.ensemble import RandomForestClassifier
+rfc = RandomForestClassifier()
+rfc.fit(X_train, y_train)
+
+RandomForestClassifierScore = rfc.score(X_test,y_test)
+print("Accacy obtained by Random Forest Classifier :", RandomForestClassifierScore*100)
+
+# Confusion Matrix of Random Forest Classifier
+
+y_pred_rfc = rfc.predict(X_test)
+cf_matrix = confusion_matrix(y_test, y_pred_rfc)
+sns.heatmap(cf_matrix, annot=True, cmap="Blues_r")
+plt.title("Confusion Matrix for Random Forest Classifier", fontsize=14, fontname="Helvetica", y=1.03);
+
+print(metrics.classification_report(y_test, y_pred_rfc))
+
+from sklearn.neighbors import KNeighborsClassifier
+knn = KNeighborsClassifier()
+knn.fit(X_train, y_train)
+
+KNeighborsClassifierScore = knn.score(X_test, y_test)
+print("Accuracy obtained by K Neighbors Classifier :", KNeighborsClassifierScore*100)
+
+# Confustion Matrix 
+
+y_pred_knn = knn.predict(X_test)
+cf_matrix = confusion_matrix(y_test, y_pred_knn)
+sns.heatmap(cf_matrix, annot=True, cmap="Blues_r")
+plt.title("Confusion Matrix for K Neighbors Classifier", fontsize=14, fontname="Helvetica", y=1.03);
+
+print(metrics.classification_report(y_test,y_pred_knn))
+
+from sklearn.tree import DecisionTreeClassifier
+tree = DecisionTreeClassifier()
+tree.fit(X_train, y_train)
+
+DecisionTreeClassifierScore = tree.score(X_test,y_test)
+print("Accuracy obtained by Decision Tree Classifier :", DecisionTreeClassifierScore*100)
+
+y_pred_tree = tree.predict(X_test)
+cf_matrix = confusion_matrix(y_test, y_pred_tree)
+sns.heatmap(cf_matrix, annot=True, cmap="Blues_r")
+plt.title("Confusion Metrix for Decision Tree Classifier", fontsize=14, fontname="Helvetica", y=1.03);
+
+print(metrics.classification_report(y_test, y_pred_tree));
+
+from sklearn.ensemble import GradientBoostingClassifier
+gb = GradientBoostingClassifier()
+gb.fit(X_train, y_train)
+
+GradientBoostingClassifierScore = gb.score(X_test,y_test)
+print("Accuracy obtained by Gradient Boosting Classifier model:",GradientBoostingClassifierScore*100)
+
+# Confusion matrix
+y_pred_gb = gb.predict(X_test)
+cf_matrix = confusion_matrix(y_test, y_pred_gb)
+sns.heatmap(cf_matrix, annot=True, cmap="Blues_r")
+plt.title("Confusion Matrix for Gradient Boosting Classifier", fontsize=14, fontname="Helvetica", y=1.03);
+
+# Classification Report of Gradient Boosting Classifier
+
+print(metrics.classification_report(y_test, y_pred_gb))
